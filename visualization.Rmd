@@ -204,14 +204,14 @@ To investigate the effect of geographic location on traffic accidents, I grouped
 ```{r p2, echo=FALSE}
 plot2
 ```
-This plot shows that Major and Minor Arterial are the most frequent road types for traffic accidents, and the number of accidents on these two roads gradually decreases as the year progresses. The number of traffic accidents on other roads remained more or less the same.
+This plot shows that most of the traffic accidents happens on Major Arterial, followed by Minor Arterial. The number of accidents on Major Arterial gradually decreases as the year progresses while the number of traffic accidents on other road types remained more or less the same.
 <br>
 
 ### Alcohol related KSI
 ```{r p3, echo=FALSE}
 plot3
 ```
-This graph shows the trend of crashes related to drunk driving over the years. We can see a rapid decrease in the frequency of drunk driving crashes from 2006 onward, especially a significant decrease in cases that resulted in MAJOR injury and no INJURY.
+This graph shows the trend of crashes related to drunk driving over the years. We can see a rapid decrease in the frequency of drunk driving crashes from 2007 onward, especially a significant decrease in cases that resulted in FATAL injury and MAJOR injury.
 <br>
 
 ## Noninteractive Visulations {.tabset}

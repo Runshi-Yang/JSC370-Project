@@ -24,8 +24,6 @@ navbar:
       href: https://github.com/Runshi-Yang
     - icon: fa-linkedin fa-lg
       href: https://www.linkedin.com/in/runshi-yang/
-    - text: "JSC370 Home"
-      href: https://jsc370.github.io/jsc370-2023/
       
 output:
   html_document:

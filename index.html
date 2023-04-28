@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="RunshiYang" />
+
+
+<title>Examining the factors affecting the occurrence of KSI</title>
+
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">JSC370 Final Project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="visualization.html">Visualizations</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Data Source
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="https://data.torontopolice.on.ca/pages/open-data">Toronto Police Service Open Data Portal</a>
+    </li>
+    <li>
+      <a href="https://open.toronto.ca/">City of Toronto's Open Data Portal</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="report.pdf">
+    <span class="fa fa-file-pdf-o"></span>
+     
+    Report
+  </a>
+</li>
+<li>
+  <a href="https://open.toronto.ca/">
+    <span class="fa fa-video"></span>
+     
+    Demonstration
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/Runshi-Yang">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://www.linkedin.com/in/runshi-yang/">
+    <span class="fa fa-linkedin fa-lg"></span>
+     
+  </a>
+</li>
+<li>
+  <a href="https://jsc370.github.io/jsc370-2023/">JSC370 Home</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Examining the factors affecting the
+occurrence of KSI</h1>
+<h3 class="subtitle">JSC370 Final Project</h3>
+<h4 class="author">RunshiYang</h4>
+
+</div>
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<div id="background" class="section level2">
+<h2>Background</h2>
+<p>Traffic accidents are one of the leading causes of injury and death
+worldwide. Despite significant advances in transportation safety
+technology, road traffic accidents remain a serious public health
+concern. In Canada, traffic accidents result in thousands of injuries
+and fatalities each year, with many of these accidents occurring in the
+city of Toronto.</p>
+<p><a href="https://data.torontopolice.on.ca/">Toronto Police Service
+Open Data Portal</a> offers a Traffic Collisions - Killed or Seriously
+Injured (KSI) Dataset, containing detailed information on all traffic
+collision events in Toronto from 2006 to 2021, where at least one person
+was either killed or seriously injured. This dataset provides
+comprehensive information that can help stakeholders gain a better
+understanding of the causes and consequences of traffic accidents in the
+city.</p>
+</div>
+<div id="research-question" class="section level2">
+<h2>Research Question</h2>
+<p>The purpose of this report is to investigate the factors that
+contribute to serious traffic accidents in Toronto. The analysis will
+focus on identifying the contributing factors to incidents resulting in
+death or serious injury, including demographic characteristics of
+drivers and victims, road conditions, and environmental factors. The
+findings of this report will help policymakers, transportation planners,
+and other stakeholders to develop effective policies and interventions
+aimed at reducing the incidence of serious traffic accidents.</p>
+</div>
+</div>
+<div id="methods" class="section level1">
+<h1>Methods</h1>
+<div id="data-collection" class="section level2">
+<h2>Data Collection</h2>
+The main data used in this report were obtained from the Toronto Police
+Service Open Data Portal, which is a reliable source of information on
+traffic accidents in Toronto. The data are available for download as a
+CSV file from <a
+href="https://data.torontopolice.on.ca/datasets/TorontoPS::ksi/about">this
+website</a>, and an API is also provided for data retrieval. I chose to
+use the API since it allows for greater flexibility in downloading data.
+For example, I am able to specify the range of years and the type of
+collisions I want to include in the dataset and I can retrieve data in
+real-time, ensuring that the dataset is up-to-date. However, due to the
+transfer limitations of the API, only 1000 rows of data could be
+downloaded at a time. To obtain the complete dataset, the API had to be
+called 17 times, with the offset value being updated each time to ensure
+that all rows were retrieved. The acquired dataset contains 16,488
+observations and 57 columns, with each line detailing the time,
+location, and road conditions of the corresponding traffic accident.
+Each observation in the dataset has a unique index that can be used to
+identify and track specific accidents.
+<div
+style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="1">
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: left; " colspan="56">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Table 1: The First 7 rows of the raw KSI Data
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:center;font-weight: bold;">
+attributes.INDEX_
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.ACCNUM
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.YEAR
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.DATE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.TIME
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.STREET1
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.STREET2
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.OFFSET
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.ROAD_CLASS
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.DISTRICT
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.WARDNUM
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.LATITUDE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.LONGITUDE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.LOCCOORD
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.ACCLOC
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.TRAFFCTL
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.VISIBILITY
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.LIGHT
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.RDSFCOND
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.ACCLASS
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.IMPACTYPE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.INVTYPE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.INVAGE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.INJURY
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.FATAL_NO
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.INITDIR
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.VEHTYPE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.MANOEUVER
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.DRIVACT
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.DRIVCOND
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.PEDTYPE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.PEDACT
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.PEDCOND
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.CYCLISTYPE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.CYCACT
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.CYCCOND
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.PEDESTRIAN
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.CYCLIST
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.AUTOMOBILE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.MOTORCYCLE
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.TRUCK
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.TRSN_CITY_VEH
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.EMERG_VEH
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.PASSENGER
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.SPEEDING
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.AG_DRIV
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.REDLIGHT
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.ALCOHOL
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.DISABILITY
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.HOOD_158
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.NEIGHBOURHOOD_158
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.HOOD_140
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.NEIGHBOURHOOD_140
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.DIVISION
+</th>
+<th style="text-align:center;font-weight: bold;">
+attributes.ObjectId
+</th>
+<th style="text-align:center;font-weight: bold;">
+geometry.x
+</th>
+<th style="text-align:center;font-weight: bold;">
+geometry.y
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+3490422
+</td>
+<td style="text-align:center;">
+930852
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+1.159675e+12
+</td>
+<td style="text-align:center;">
+1540
+</td>
+<td style="text-align:center;">
+BIRCHMOUNT RD
+</td>
+<td style="text-align:center;">
+EGLINTON AVE E
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+Scarborough
+</td>
+<td style="text-align:center;">
+21
+</td>
+<td style="text-align:center;">
+43.73215
+</td>
+<td style="text-align:center;">
+-79.27859
+</td>
+<td style="text-align:center;">
+Mid-Block
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+No Control
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Daylight
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Non-Fatal Injury
+</td>
+<td style="text-align:center;">
+Rear End
+</td>
+<td style="text-align:center;">
+Driver
+</td>
+<td style="text-align:center;">
+85 to 89
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+North
+</td>
+<td style="text-align:center;">
+Automobile, Station Wagon
+</td>
+<td style="text-align:center;">
+Slowing or Stopping
+</td>
+<td style="text-align:center;">
+Driving Properly
+</td>
+<td style="text-align:center;">
+Normal
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+125
+</td>
+<td style="text-align:center;">
+Ionview
+</td>
+<td style="text-align:center;">
+125
+</td>
+<td style="text-align:center;">
+Ionview (125)
+</td>
+<td style="text-align:center;">
+D41
+</td>
+<td style="text-align:center;">
+1001
+</td>
+<td style="text-align:center;">
+-8825252
+</td>
+<td style="text-align:center;">
+5424084
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519703
+</td>
+<td style="text-align:center;">
+941871
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+1.164172e+12
+</td>
+<td style="text-align:center;">
+1615
+</td>
+<td style="text-align:center;">
+DUFFERIN ST
+</td>
+<td style="text-align:center;">
+MELBOURNE AVE
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Minor Arterial
+</td>
+<td style="text-align:center;">
+Toronto and East York
+</td>
+<td style="text-align:center;">
+410
+</td>
+<td style="text-align:center;">
+43.64055
+</td>
+<td style="text-align:center;">
+-79.42799
+</td>
+<td style="text-align:center;">
+Intersection
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Pedestrian Crossover
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Daylight
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Non-Fatal Injury
+</td>
+<td style="text-align:center;">
+Pedestrian Collisions
+</td>
+<td style="text-align:center;">
+Driver
+</td>
+<td style="text-align:center;">
+30 to 34
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+South
+</td>
+<td style="text-align:center;">
+Other
+</td>
+<td style="text-align:center;">
+Going Ahead
+</td>
+<td style="text-align:center;">
+Failed to Yield Right of Way
+</td>
+<td style="text-align:center;">
+Normal
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+85
+</td>
+<td style="text-align:center;">
+South Parkdale
+</td>
+<td style="text-align:center;">
+85
+</td>
+<td style="text-align:center;">
+South Parkdale (85)
+</td>
+<td style="text-align:center;">
+D14
+</td>
+<td style="text-align:center;">
+1002
+</td>
+<td style="text-align:center;">
+-8841883
+</td>
+<td style="text-align:center;">
+5409983
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519704
+</td>
+<td style="text-align:center;">
+941871
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+1.164172e+12
+</td>
+<td style="text-align:center;">
+1615
+</td>
+<td style="text-align:center;">
+DUFFERIN ST
+</td>
+<td style="text-align:center;">
+MELBOURNE AVE
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Minor Arterial
+</td>
+<td style="text-align:center;">
+Toronto and East York
+</td>
+<td style="text-align:center;">
+410
+</td>
+<td style="text-align:center;">
+43.64055
+</td>
+<td style="text-align:center;">
+-79.42799
+</td>
+<td style="text-align:center;">
+Intersection
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Pedestrian Crossover
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Daylight
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Non-Fatal Injury
+</td>
+<td style="text-align:center;">
+Pedestrian Collisions
+</td>
+<td style="text-align:center;">
+Pedestrian
+</td>
+<td style="text-align:center;">
+40 to 44
+</td>
+<td style="text-align:center;">
+Major
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+East
+</td>
+<td style="text-align:center;">
+Other
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Pedestrian hit a PXO/ped. Mid-block signal
+</td>
+<td style="text-align:center;">
+Crossing, Pedestrian Crossover
+</td>
+<td style="text-align:center;">
+Medical or Physical Disability
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+85
+</td>
+<td style="text-align:center;">
+South Parkdale
+</td>
+<td style="text-align:center;">
+85
+</td>
+<td style="text-align:center;">
+South Parkdale (85)
+</td>
+<td style="text-align:center;">
+D14
+</td>
+<td style="text-align:center;">
+1003
+</td>
+<td style="text-align:center;">
+-8841883
+</td>
+<td style="text-align:center;">
+5409983
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3522002
+</td>
+<td style="text-align:center;">
+942726
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+1.164172e+12
+</td>
+<td style="text-align:center;">
+2102
+</td>
+<td style="text-align:center;">
+DUFFERIN St
+</td>
+<td style="text-align:center;">
+LINDSEY Ave
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+Toronto and East York
+</td>
+<td style="text-align:center;">
+9
+</td>
+<td style="text-align:center;">
+43.65355
+</td>
+<td style="text-align:center;">
+-79.43299
+</td>
+<td style="text-align:center;">
+Intersection
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+No Control
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dark
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Non-Fatal Injury
+</td>
+<td style="text-align:center;">
+Rear End
+</td>
+<td style="text-align:center;">
+Driver
+</td>
+<td style="text-align:center;">
+50 to 54
+</td>
+<td style="text-align:center;">
+Minimal
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+South
+</td>
+<td style="text-align:center;">
+Automobile, Station Wagon
+</td>
+<td style="text-align:center;">
+Stopped
+</td>
+<td style="text-align:center;">
+Driving Properly
+</td>
+<td style="text-align:center;">
+Normal
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+83
+</td>
+<td style="text-align:center;">
+Dufferin Grove
+</td>
+<td style="text-align:center;">
+83
+</td>
+<td style="text-align:center;">
+Dufferin Grove (83)
+</td>
+<td style="text-align:center;">
+D11
+</td>
+<td style="text-align:center;">
+1004
+</td>
+<td style="text-align:center;">
+-8842440
+</td>
+<td style="text-align:center;">
+5411983
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3522003
+</td>
+<td style="text-align:center;">
+942726
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+1.164172e+12
+</td>
+<td style="text-align:center;">
+2102
+</td>
+<td style="text-align:center;">
+DUFFERIN St
+</td>
+<td style="text-align:center;">
+LINDSEY Ave
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+Toronto and East York
+</td>
+<td style="text-align:center;">
+9
+</td>
+<td style="text-align:center;">
+43.65355
+</td>
+<td style="text-align:center;">
+-79.43299
+</td>
+<td style="text-align:center;">
+Intersection
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+No Control
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dark
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Non-Fatal Injury
+</td>
+<td style="text-align:center;">
+Rear End
+</td>
+<td style="text-align:center;">
+Driver
+</td>
+<td style="text-align:center;">
+40 to 44
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+South
+</td>
+<td style="text-align:center;">
+Automobile, Station Wagon
+</td>
+<td style="text-align:center;">
+Going Ahead
+</td>
+<td style="text-align:center;">
+Following too Close
+</td>
+<td style="text-align:center;">
+Normal
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+83
+</td>
+<td style="text-align:center;">
+Dufferin Grove
+</td>
+<td style="text-align:center;">
+83
+</td>
+<td style="text-align:center;">
+Dufferin Grove (83)
+</td>
+<td style="text-align:center;">
+D11
+</td>
+<td style="text-align:center;">
+1005
+</td>
+<td style="text-align:center;">
+-8842440
+</td>
+<td style="text-align:center;">
+5411983
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3522004
+</td>
+<td style="text-align:center;">
+942726
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+1.164172e+12
+</td>
+<td style="text-align:center;">
+2102
+</td>
+<td style="text-align:center;">
+DUFFERIN St
+</td>
+<td style="text-align:center;">
+LINDSEY Ave
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+Toronto and East York
+</td>
+<td style="text-align:center;">
+9
+</td>
+<td style="text-align:center;">
+43.65355
+</td>
+<td style="text-align:center;">
+-79.43299
+</td>
+<td style="text-align:center;">
+Intersection
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+No Control
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dark
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Non-Fatal Injury
+</td>
+<td style="text-align:center;">
+Rear End
+</td>
+<td style="text-align:center;">
+Driver
+</td>
+<td style="text-align:center;">
+35 to 39
+</td>
+<td style="text-align:center;">
+Major
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+South
+</td>
+<td style="text-align:center;">
+Automobile, Station Wagon
+</td>
+<td style="text-align:center;">
+Stopped
+</td>
+<td style="text-align:center;">
+Driving Properly
+</td>
+<td style="text-align:center;">
+Normal
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+83
+</td>
+<td style="text-align:center;">
+Dufferin Grove
+</td>
+<td style="text-align:center;">
+83
+</td>
+<td style="text-align:center;">
+Dufferin Grove (83)
+</td>
+<td style="text-align:center;">
+D11
+</td>
+<td style="text-align:center;">
+1006
+</td>
+<td style="text-align:center;">
+-8842440
+</td>
+<td style="text-align:center;">
+5411983
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519357
+</td>
+<td style="text-align:center;">
+941748
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+1.164258e+12
+</td>
+<td style="text-align:center;">
+1352
+</td>
+<td style="text-align:center;">
+FINCH AVE W
+</td>
+<td style="text-align:center;">
+ISLINGTON AVE
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+Etobicoke York
+</td>
+<td style="text-align:center;">
+17
+</td>
+<td style="text-align:center;">
+43.74625
+</td>
+<td style="text-align:center;">
+-79.56859
+</td>
+<td style="text-align:center;">
+Intersection
+</td>
+<td style="text-align:center;">
+At Intersection
+</td>
+<td style="text-align:center;">
+Traffic Signal
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Daylight
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Non-Fatal Injury
+</td>
+<td style="text-align:center;">
+Turning Movement
+</td>
+<td style="text-align:center;">
+Driver
+</td>
+<td style="text-align:center;">
+60 to 64
+</td>
+<td style="text-align:center;">
+Major
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+East
+</td>
+<td style="text-align:center;">
+Automobile, Station Wagon
+</td>
+<td style="text-align:center;">
+Turning Left
+</td>
+<td style="text-align:center;">
+Improper Turn
+</td>
+<td style="text-align:center;">
+Normal
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+Yes
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+NA
+</td>
+<td style="text-align:center;">
+22
+</td>
+<td style="text-align:center;">
+Humbermede
+</td>
+<td style="text-align:center;">
+22
+</td>
+<td style="text-align:center;">
+Humbermede (22)
+</td>
+<td style="text-align:center;">
+D31
+</td>
+<td style="text-align:center;">
+1007
+</td>
+<td style="text-align:center;">
+-8857535
+</td>
+<td style="text-align:center;">
+5426257
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="data-cleaning-and-data-wrangling" class="section level2">
+<h2>Data Cleaning and Data Wrangling</h2>
+<p>In this study, data cleaning and wrangling are conducted to ensure
+the accuracy and consistency of the data. First, 11 columns of the KSI
+dataset are selected based on their potential influence on traffic
+accidents, including factors such as location, road conditions, and
+driver behavior. To facilitate analysis and interpretation, columns are
+renamed with more descriptive names.</p>
+<p>One issue identified during the data cleaning process was the date
+column, which was recorded in <a
+href="https://en.wikipedia.org/wiki/Unix_time">Unix time</a>. To make
+the data more accessible and understandable, the date column is
+converted to a year/month/day hour:minute format with the help of the
+<code>lubridate</code> package.</p>
+<p>Another issue identified during the data cleaning process was the use
+of <code>NA</code> values in the SPEEDING and ALCOHOL columns to
+indicate that the driver was not speeding or driving under the
+influence. To ensure consistency and avoid potential confusion, these NA
+values are replaced with boolean values (<code>TRUE</code> and
+<code>FALSE</code>) to indicate whether or not these factors were
+involved in the collision.</p>
+<p>Finally, due to the relatively small number of incomplete
+observations, it was decided to remove any observation with missing
+data. The resulting cleaned dataset contains 11,734 observations, all of
+which have complete data. This ensures that the analysis conducted on
+this dataset is reliable and accurate. Table 2 shows the first 10 rows
+of the cleaned data.</p>
+<div
+style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
+<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="1">
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: left; " colspan="10">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Table 2: The First 10 rows of the cleaned KSI Data
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:center;font-weight: bold;">
+ID
+</th>
+<th style="text-align:center;font-weight: bold;">
+YEAR
+</th>
+<th style="text-align:center;font-weight: bold;">
+DATE
+</th>
+<th style="text-align:center;font-weight: bold;">
+ROAD_CLASS
+</th>
+<th style="text-align:center;font-weight: bold;">
+LATITUDE
+</th>
+<th style="text-align:center;font-weight: bold;">
+LONGITUDE
+</th>
+<th style="text-align:center;font-weight: bold;">
+WEATHER
+</th>
+<th style="text-align:center;font-weight: bold;">
+ROAD_CONDITION
+</th>
+<th style="text-align:center;font-weight: bold;">
+INJURY
+</th>
+<th style="text-align:center;font-weight: bold;">
+SPEEDING
+</th>
+<th style="text-align:center;font-weight: bold;">
+ALCOHOL
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+3490422
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-10-01 04:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.73215
+</td>
+<td style="text-align:center;">
+-79.27859
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519703
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-22 05:00
+</td>
+<td style="text-align:center;">
+Minor Arterial
+</td>
+<td style="text-align:center;">
+43.64055
+</td>
+<td style="text-align:center;">
+-79.42799
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519704
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-22 05:00
+</td>
+<td style="text-align:center;">
+Minor Arterial
+</td>
+<td style="text-align:center;">
+43.64055
+</td>
+<td style="text-align:center;">
+-79.42799
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Major
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3522002
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-22 05:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.65355
+</td>
+<td style="text-align:center;">
+-79.43299
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Minimal
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3522003
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-22 05:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.65355
+</td>
+<td style="text-align:center;">
+-79.43299
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3522004
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-22 05:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.65355
+</td>
+<td style="text-align:center;">
+-79.43299
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Major
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519357
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-23 05:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.74625
+</td>
+<td style="text-align:center;">
+-79.56859
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Major
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519358
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-23 05:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.74625
+</td>
+<td style="text-align:center;">
+-79.56859
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3490423
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-10-01 04:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.73215
+</td>
+<td style="text-align:center;">
+-79.27859
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+None
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+3519359
+</td>
+<td style="text-align:center;">
+2006
+</td>
+<td style="text-align:center;">
+2006-11-23 05:00
+</td>
+<td style="text-align:center;">
+Major Arterial
+</td>
+<td style="text-align:center;">
+43.74625
+</td>
+<td style="text-align:center;">
+-79.56859
+</td>
+<td style="text-align:center;">
+Clear
+</td>
+<td style="text-align:center;">
+Dry
+</td>
+<td style="text-align:center;">
+Minimal
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+<td style="text-align:center;">
+FALSE
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+Then I move on to analyzing the data to identify any anomalies or
+potential errors. One of the first things I did was to create a summary
+of the numerical variables in the dataset (see Table 3). I do not find
+anything unusual, which gives me confidence that the data is clean and
+accurate.
+<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Table 3: Summary of Numeric Columns in KSI Data Frame
+</caption>
+<thead>
+<tr>
+<th style="empty-cells: hide;border-bottom:hidden;" colspan="1">
+</th>
+<th style="border-bottom:hidden;padding-bottom:0; padding-left:3px;padding-right:3px;text-align: left; " colspan="4">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px; ">
+Summary Statistics
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:left;font-weight: bold;">
+</th>
+<th style="text-align:center;font-weight: bold;">
+ID
+</th>
+<th style="text-align:center;font-weight: bold;">
+YEAR
+</th>
+<th style="text-align:center;font-weight: bold;">
+LATITUDE
+</th>
+<th style="text-align:center;font-weight: bold;">
+LONGITUDE
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+Min. : 3470108
+</td>
+<td style="text-align:center;">
+Min. :2006
+</td>
+<td style="text-align:center;">
+Min. :43.59
+</td>
+<td style="text-align:center;">
+Min. :-79.64
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+1st Qu.: 6105226
+</td>
+<td style="text-align:center;">
+1st Qu.:2010
+</td>
+<td style="text-align:center;">
+1st Qu.:43.66
+</td>
+<td style="text-align:center;">
+1st Qu.:-79.47
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+Median : 8000017
+</td>
+<td style="text-align:center;">
+Median :2013
+</td>
+<td style="text-align:center;">
+Median :43.70
+</td>
+<td style="text-align:center;">
+Median :-79.40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+Mean :43133801
+</td>
+<td style="text-align:center;">
+Mean :2014
+</td>
+<td style="text-align:center;">
+Mean :43.71
+</td>
+<td style="text-align:center;">
+Mean :-79.40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+3rd Qu.:80917314
+</td>
+<td style="text-align:center;">
+3rd Qu.:2017
+</td>
+<td style="text-align:center;">
+3rd Qu.:43.76
+</td>
+<td style="text-align:center;">
+3rd Qu.:-79.32
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+Max. :81705465
+</td>
+<td style="text-align:center;">
+Max. :2022
+</td>
+<td style="text-align:center;">
+Max. :43.86
+</td>
+<td style="text-align:center;">
+Max. :-79.12
+</td>
+</tr>
+</tbody>
+</table>
+<p>Moving on, I create a bar plot to show the distribution of collisions
+over the years. From the plot, I observe that the number of KSIs per
+year decreases as the year increases, except for 2006 where there was a
+lower number of KSIs compared to the other years. And the number of
+traffic accidents decreases rapidly from 2020 to 2022.</p>
+<p><img src="index_files/figure-html/fig1-1.png" width="960" /></p>
+<p>So I plotted the number of traffic accidents from 2006 to 2007 and
+2019 to 2022 to figure out why the above happens. It turns out that the
+data for 2006 and 2022 are not complete, the dataset only records data
+after September 2006 and before October 2022. And I suspect that the
+data for 2020 and 2021 are not representative since they are affected by
+Covid-19. Since time of the year is potentially associated with traffic
+accidents, so I decided to use only the data between 2007 and 2019 for
+the analysis.</p>
+<p><img src="index_files/figure-html/fig2-1.png" width="960" /></p>
+<p>Overall, the analysis gives me confidence that the data is now clean
+and accurate. By identifying and addressing any potential anomalies or
+biases, I am able to ensure the validity and reliability of the
+analysis. The dataset contains a total of 12,991 observations, providing
+us with sufficient data to draw inferences about the factors that
+contribute to the incidence of severe traffic accidents in Toronto.</p>
+</div>
+</div>
+
+<p>Copyright &copy; 2023. Runshi Yang.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

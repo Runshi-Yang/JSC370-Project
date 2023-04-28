@@ -1,0 +1,212 @@
+---
+title: "Examining the factors affecting the occurrence of KSI"
+subtitle: "JSC370 Final Project"
+author: "RunshiYang"
+output: 
+    html_document:
+        toc: TRUE
+        toc_float: TRUE
+---
+```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
+library(httr)
+library(jsonlite)
+library(dplyr)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+library(leaflet)
+library(viridis)
+library(tidyverse)
+library(ggplot2)
+library(gridExtra)
+library(broom)
+```
+
+```{r load_data, include=FALSE}
+KSI <- read.csv("https://raw.githubusercontent.com/Runshi-Yang/JSC370/main/assignments/final/KSI.csv")
+```
+# Introduction
+
+## Background
+Traffic accidents are one of the leading causes of injury and death worldwide. Despite significant advances in transportation safety technology, road traffic accidents remain a serious public health concern. In Canada, traffic accidents result in thousands of injuries and fatalities each year, with many of these accidents occurring in the city of Toronto.
+
+[Toronto Police Service Open Data Portal](https://data.torontopolice.on.ca/) offers a Traffic Collisions - Killed or Seriously Injured (KSI) Dataset, containing detailed information on all traffic collision events in Toronto from 2006 to 2021, where at least one person was either killed or seriously injured. This dataset provides comprehensive information that can help stakeholders gain a better understanding of the causes and consequences of traffic accidents in the city.
+
+## Research Question
+The purpose of this report is to investigate the factors that contribute to serious traffic accidents in Toronto. The analysis will focus on identifying the contributing factors to incidents resulting in death or serious injury, including demographic characteristics of drivers and victims, road conditions, and environmental factors. The findings of this report will help policymakers, transportation planners, and other stakeholders to develop effective policies and interventions aimed at reducing the incidence of serious traffic accidents.
+
+
+# Methods
+
+## Data Collection
+
+The main data used in this report were obtained from the Toronto Police Service Open Data Portal, which is a reliable source of information on traffic accidents in Toronto. The data are available for download as a CSV file from [this website](https://data.torontopolice.on.ca/datasets/TorontoPS::ksi/about), and an API is also provided for data retrieval. I chose to use the API since it allows for greater flexibility in downloading data. For example, I am able to specify the range of years and the type of collisions I want to include in the dataset and I can retrieve data in real-time, ensuring that the dataset is up-to-date. However, due to the transfer limitations of the API, only 1000 rows of data could be downloaded at a time. To obtain the complete dataset, the API had to be called 17 times, with the offset value being updated each time to ensure that all rows were retrieved. The acquired dataset contains 16,488 observations and 57 columns, with each line detailing the time, location, and road conditions of the corresponding traffic accident. Each observation in the dataset has a unique index that can be used to identify and track specific accidents.
+```{r table-1, echo=FALSE}
+# The following table can not be shown in the pdf file
+KSI_subset <- KSI %>%
+  head(7)
+kable(KSI_subset, format = "html", align = "c") %>%
+  kable_styling("striped", full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  add_header_above(c(" " = 1, "Table 1: The First 7 rows of the raw KSI Data" = 56), escape = FALSE, align = "left") %>%
+  scroll_box(width = "100%")
+```
+
+## Data Cleaning and Data Wrangling
+
+In this study, data cleaning and wrangling are conducted to ensure the accuracy and consistency of the data. First, 11 columns of the KSI dataset are selected based on their potential influence on traffic accidents, including factors such as location, road conditions, and driver behavior. To facilitate analysis and interpretation, columns are renamed with more descriptive names. 
+
+One issue identified during the data cleaning process was the date column, which was recorded in [Unix time](https://en.wikipedia.org/wiki/Unix_time). To make the data more accessible and understandable, the date column is converted to a year/month/day hour:minute format with the help of the `lubridate` package.
+
+Another issue identified during the data cleaning process was the use of `NA` values in the SPEEDING and ALCOHOL columns to indicate that the driver was not speeding or driving under the influence. To ensure consistency and avoid potential confusion, these NA values are replaced with boolean values (`TRUE` and `FALSE`) to indicate whether or not these factors were involved in the collision. 
+
+Finally, due to the relatively small number of incomplete observations, it was decided to remove any observation with missing data. The resulting cleaned dataset contains 11,734 observations, all of which have complete data. This ensures that the analysis conducted on this dataset is reliable and accurate. Table 2 shows the first 10 rows of the cleaned data.
+
+```{r choose_column, include=FALSE}
+# Select the columns that I am interested in
+KSI <- KSI |>
+  select(attributes.INDEX_,
+         attributes.YEAR,
+         attributes.DATE,
+         attributes.ROAD_CLASS,
+         attributes.LATITUDE,
+         attributes.LONGITUDE,
+         attributes.VISIBILITY,
+         attributes.RDSFCOND,
+         attributes.INJURY,
+         attributes.SPEEDING,
+         attributes.ALCOHOL
+         ) |>
+  rename(ID = attributes.INDEX_,
+         YEAR = attributes.YEAR,
+         DATE = attributes.DATE,
+         ROAD_CLASS = attributes.ROAD_CLASS,
+         LATITUDE = attributes.LATITUDE,
+         LONGITUDE = attributes.LONGITUDE,
+         WEATHER = attributes.VISIBILITY,
+         ROAD_CONDITION = attributes.RDSFCOND,
+         INJURY = attributes.INJURY,
+         SPEEDING = attributes.SPEEDING,
+         ALCOHOL = attributes.ALCOHOL)
+```
+
+```{r clean,include=FALSE}
+# Converting DATE column:
+KSI$DATE <- as_datetime(KSI$DATE / 1000, origin = "1970-01-01")
+KSI$DATE <- format(KSI$DATE, "%Y-%m-%d %H:%M")
+
+# Replace "Yes" with TRUE and NA with FALSE in the SPEEDING and ALCOHOL columns
+KSI$SPEEDING <- ifelse(is.na(KSI$SPEEDING), FALSE, TRUE)
+KSI$ALCOHOL <- ifelse(is.na(KSI$ALCOHOL), FALSE, TRUE)
+
+# Check the number of observations with NA
+sum(rowSums(is.na(KSI)) > 0)
+
+# Subset the data frame to only include rows without missing values
+KSI <- KSI[complete.cases(KSI), ]
+```
+
+```{r table-2, echo=FALSE}
+KSI_subset <- KSI |>
+  select(ID, YEAR, DATE, ROAD_CLASS, LATITUDE, LONGITUDE, WEATHER, ROAD_CONDITION, INJURY, SPEEDING, ALCOHOL) %>%
+  head(10)
+# Create a table with the first 10 rows of the cleaned data frame with scrollbar
+kable(KSI_subset, format = "html", align = "c") %>%
+  kable_styling("striped", full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  add_header_above(c(" " = 1, "Table 2: The First 10 rows of the cleaned KSI Data" = 10), escape = FALSE, align = "left") %>%
+  scroll_box(width = "100%")
+```
+
+
+Then I move on to analyzing the data to identify any anomalies or potential errors. One of the first things I did was to create a summary of the numerical variables in the dataset (see Table 3). I do not find anything unusual, which gives me confidence that the data is clean and accurate.
+```{r table-3, echo=FALSE}
+# Compute summary statistics for numeric columns
+KSI_summary <- summary(KSI[, sapply(KSI, is.numeric)])
+
+# Format the summary table
+kable(KSI_summary,
+      caption = "Table 3: Summary of Numeric Columns in KSI Data Frame",
+      align = "c") %>%
+  kable_styling("striped", full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  add_header_above(c(" " = 1, "Summary Statistics" = 4), escape = FALSE, align = "left")
+```
+
+Moving on, I create a bar plot to show the distribution of collisions over the years. From the plot, I observe that the number of KSIs per year decreases as the year increases, except for 2006 where there was a lower number of KSIs compared to the other years. And the number of traffic accidents decreases rapidly from 2020 to 2022. 
+
+```{r fig1, echo=FALSE, fig.width = 10, fig.height = 6}
+KSI_filter <- KSI %>% 
+  filter(YEAR != 2006, YEAR != 2020, YEAR != 2021, YEAR != 2022)
+
+histogram_2006 <- ggplot(KSI, aes(x = YEAR, fill = factor(YEAR))) +
+  geom_histogram(color = "black", alpha = 0.8, binwidth = 1) +
+  scale_fill_viridis_d() +
+  labs(title = "Distribution of Collisions by Year", x = "Year", y = "Frequency") +
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        axis.line = element_line(color = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        plot.margin = unit(c(1,1,1,1), "cm"))
+
+histogram_no_2006 <- ggplot(KSI_filter, aes(x = YEAR, fill = factor(YEAR))) +
+  geom_histogram(color = "black", alpha = 0.8, binwidth = 1) +
+  scale_fill_viridis_d() +
+  labs(title = "Distribution of Collisions by Year", x = "Year", y = "Frequency") +
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        axis.line = element_line(color = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        plot.margin = unit(c(1,1,1,1), "cm"))
+grid.arrange(histogram_2006, histogram_no_2006, ncol = 2)
+```
+
+So I plotted the number of traffic accidents from 2006 to 2007 and 2019 to 2022 to figure out why the above happens. It turns out that the data for 2006 and 2022 are not complete, the dataset only records data after September 2006 and before October 2022. And I suspect that the data for 2020 and 2021 are not representative since they are affected by Covid-19. Since time of the year is potentially associated with traffic accidents, so I decided to use only the data between 2007 and 2019 for the analysis.
+
+```{r fig2, echo=FALSE, message=FALSE, warning = FALSE, fig.width = 10, fig.height = 6}
+# First plot
+KSI_2006_2007 <- KSI %>% 
+  filter(YEAR %in% c(2006, 2007)) %>%
+  mutate(MONTH = lubridate::month(DATE))
+collisions_by_month1 <- KSI_2006_2007 %>%
+  group_by(YEAR, MONTH) %>%
+  summarise(COLLISIONS = n())
+plot1 <- ggplot(collisions_by_month1, aes(x = as.Date(paste(YEAR, MONTH, "01", sep = "-")), y = COLLISIONS)) +
+  geom_line() +
+  scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+  labs(x = "Month", y = "Number of Collisions", title = "Monthly Collisions in Toronto, 2006-2007") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Second plot
+KSI_2019_2022 <- KSI %>% 
+  filter(YEAR %in% c(2019, 2020, 2021, 2022)) %>%
+  mutate(MONTH = lubridate::month(DATE))
+collisions_by_month2 <- KSI_2019_2022 %>%
+  group_by(YEAR, MONTH) %>%
+  summarise(COLLISIONS = n())
+plot2 <- ggplot(collisions_by_month2, aes(x = as.Date(paste(YEAR, MONTH, "01", sep = "-")), y = COLLISIONS)) +
+  geom_line() +
+  scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+  labs(x = "Month", y = "Number of Collisions", title = "Monthly Collisions in Toronto, 2019-2022") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Arrange plots vertically in the same grid
+grid.arrange(plot1, plot2, ncol = 1)
+```
+```{r, echo=FALSE}
+KSI <- KSI %>% 
+  filter(YEAR != 2006, YEAR != 2020, YEAR != 2021, YEAR != 2022)
+
+write.csv(KSI, file = "KSI.csv", row.names = FALSE)
+```
+
+Overall, the analysis gives me confidence that the data is now clean and accurate. By identifying and addressing any potential anomalies or biases, I am able to ensure the validity and reliability of the analysis. The dataset contains a total of 12,991 observations, providing us with sufficient data to draw inferences about the factors that contribute to the incidence of severe traffic accidents in Toronto.
+
+
+

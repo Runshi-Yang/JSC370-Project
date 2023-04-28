@@ -1,0 +1,254 @@
+---
+title: "Examining the factors affecting the occurrence of KSI"
+subtitle: "JSC370 Final Project"
+author: "RunshiYang"
+output: 
+    html_document:
+        toc: TRUE
+        toc_float: TRUE
+---
+
+<br>
+
+The following are interactive visualizations of my findings.
+
+<br>
+
+```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
+
+library(data.table)
+library(tidyverse)
+library(dplyr)
+library(plotly)
+library(DT)
+library(knitr)
+library(leaflet)
+library(sf)
+library(ggplot2)
+library(kableExtra)
+
+# Initialize code chunk options
+opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  eval=TRUE,
+  echo = TRUE,
+  cache = FALSE,
+  fig.width = 7, 
+  fig.align = 'center',
+  fig.asp = 0.618,
+  out.width = "700px",
+  class.source = "code-r")
+```
+
+```{css, echo = FALSE}
+.code-r { /* Code block */
+  font-size: 15px;
+}
+
+.code-r-small { /* Code block */
+  font-size: 10px;
+}
+```
+
+
+```{r load-data, echo=FALSE}
+KSI <- read.csv("https://raw.githubusercontent.com/Runshi-Yang/JSC370/main/assignments/final/KSI_filtered.csv")
+```
+
+
+```{r plot1, class.source="code-r-small", echo=FALSE, results = 'hide'}
+# Load neighborhood shapefile
+neighborhoods <- st_read("data/Neighbourhoods.geojson")
+
+# Filter KSI data for the time period and location covered by the neighborhood shapefile
+KSI_filtered <- KSI %>%
+  filter(YEAR >= 2006 & YEAR <= 2021) %>%
+  st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = 4326)
+
+# Aggregate KSI data by neighborhood
+collisions_by_neighborhood <- st_join(KSI_filtered, neighborhoods, join = st_intersects) %>%
+  group_by(AREA_NAME) %>%
+  summarize(count = n()) %>%
+  mutate(AREA_NAME = as.character(AREA_NAME))  # Add AREA_NAME column
+
+# Merge neighborhood and collision data
+neighborhoods_collisions <- st_join(neighborhoods, collisions_by_neighborhood)
+
+# Create a leaflet map
+pal <- colorNumeric(palette = "Reds", domain = neighborhoods_collisions$count)
+plot1 <- leaflet(neighborhoods_collisions) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addPolygons(fillColor = ~pal(count),
+              fillOpacity = 0.8,
+              color = "white",
+              weight = 1,
+              popup = ~paste(AREA_NAME.x, "<br>", "Number of Collisions: ", count)) %>%
+  addLegend(position = "bottomright", 
+            title = "Number of Collisions",
+            pal = pal,
+            values = neighborhoods_collisions$count)
+```
+```{r plot2, class.source="code-r-small", echo=FALSE}
+KSI_filtered1 <- KSI %>%
+  select(YEAR, ROAD_CLASS) %>%
+  group_by(YEAR, ROAD_CLASS) %>%
+  summarise(count = n())
+
+plt_ksi <- ggplot(KSI_filtered1, aes(x = YEAR, y = count, color = ROAD_CLASS)) +
+  geom_line() +
+  labs(title = "Number of KSI Collisions by Road Type and Year",
+       x = "Year",
+       y = "Number of Collisions",
+       color = "Road Type") +
+  theme_minimal()
+
+plot2 <- ggplotly(plt_ksi)
+```
+
+
+```{r plot3, class.source="code-r-small", echo=FALSE}
+# Filter KSI data for alcohol-related collisions only
+KSI_alcohol <- KSI %>%
+  filter(ALCOHOL == TRUE)
+
+# Group the data by year and injury level, and calculate the count of alcohol-related collisions
+KSI_alcohol_by_year <- KSI_alcohol %>%
+  group_by(YEAR, INJURY) %>%
+  summarize(count = n())
+
+# Create a ggplot object with year on the x-axis, count on the y-axis, and injury level as color
+plt_alcohol <- ggplot(KSI_alcohol_by_year, aes(x = YEAR, y = count, color = INJURY)) +
+  geom_line() +
+  theme_minimal() +
+  labs(title = "Alcohol-Related Collisions by Year and Injury Level", 
+       x = "Year", y = "Count", color = "Injury Level")
+
+# Convert the ggplot object to a plotly object
+plot3 <- ggplotly(plt_alcohol)
+```
+
+```{r plot4, class.source="code-r-small", echo=FALSE}
+KSI$ROAD_CONDITION <- ifelse(KSI$ROAD_CONDITION %in% c("Ice", "Loose Snow", "Packed Snow", "Slush"), "Ice",
+                              ifelse(KSI$ROAD_CONDITION == "Spilled liquid", "Wet",
+                                     ifelse(KSI$ROAD_CONDITION == "Strong wind", "Other", KSI$ROAD_CONDITION)))
+
+# Calculate the number of collisions for each weather condition
+n1 <- table(KSI$WEATHER)["Clear"]
+n2 <- sum(table(KSI$WEATHER)[c("Freezing Rain", "Snow", "Drifting Snow")])
+n3 <- table(KSI$WEATHER)["Fog, Mist, Smoke, Dust"]
+n4 <- table(KSI$WEATHER)["Rain"]
+n5 <- sum(table(KSI$WEATHER)[c("Strong wind", "Other")])
+
+# Calculate the total number of collisions on each road condition
+avg_Dry <- sum(KSI$ROAD_CONDITION == "Dry") / n1
+avg_Ice <- sum(KSI$ROAD_CONDITION %in% c("Ice", "Freezing Rain", "Snow", "Drifting Snow")) / n2
+avg_Loose_Sand_Gravel <- sum(KSI$ROAD_CONDITION == "Loose Sand or Gravel") / n3
+avg_Wet <- sum(KSI$ROAD_CONDITION == "Wet") / n4
+avg_Other <- sum(KSI$ROAD_CONDITION %in% c("Other", "Strong wind")) / n5
+
+avgs <- c(avg_Dry, avg_Ice, avg_Loose_Sand_Gravel, avg_Wet, avg_Other)
+bar_colors <- c("#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3")
+
+
+# Create a data frame with the road conditions and average number of collisions
+df <- data.frame(RoadCondition = c("Dry", "Ice", "Loose Sand or Gravel", "Wet", "Other"),
+                 AverageCollisions = avgs)
+
+# Create the bar plot with specified colors and add title
+plot4 <- ggplot(df, aes(x = RoadCondition, y = AverageCollisions, fill = RoadCondition)) +
+         geom_bar(stat = "identity", color = "black") +
+         scale_fill_manual(values = bar_colors) +
+         labs(x = "Road Condition", y = "Average Number of Collisions Per Day",
+              title = "Average Number of Collisions by Road Condition") +
+         theme_classic()
+
+# Add horizontal grid lines to the plot
+plot4 <- plot4 + geom_hline(yintercept = seq(0, max(avgs), by = 0.5),
+                            linetype = "dotted", color = "gray")
+
+# Add text labels to the bars indicating the average number of collisions
+plot4 <- plot4 + geom_text(aes(label = round(AverageCollisions, 2)), vjust = -0.5, size = 3)
+```
+
+```{r plot5, class.source="code-r-small", echo=FALSE}
+# Define the order of injury levels
+injury_order <- c("Fatal", "Major", "Minimal", "Minor", "None")
+
+# Group the data by speeding, alcohol, year, and injury level, and count the number of collisions in each group
+KSI_summary <- KSI %>%
+  mutate(SPEEDING = ifelse(SPEEDING, "speeding", "no speeding"),
+         ALCOHOL = ifelse(ALCOHOL, "alcohol", "no alcohol")) %>%
+  group_by(SPEEDING, ALCOHOL, INJURY) %>%
+  summarize(num_collisions = n())
+
+# Create a stacked bar chart showing the number of collisions for each injury level, separated by speeding and alcohol status
+plot5<- ggplot(KSI_summary, aes(x = INJURY, y = num_collisions, fill = INJURY)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "Injury Level", y = "Number of Collisions", fill = NULL) +
+  scale_fill_discrete(limits = injury_order) +
+  theme(panel.spacing.x = unit(0.5, "lines")) +
+  facet_grid(SPEEDING ~ ALCOHOL)
+```
+## Interactive Visulations {.tabset}
+
+### Map of Toronto KSI
+```{r p1, echo=FALSE}
+plot1
+```
+To investigate the effect of geographic location on traffic accidents, I grouped all traffic accidents that occurred between 2007 and 2021 by neighborhood using information on the latitude and longitude of traffic accidents and the Toronto neighborhood delineated by Statistics Canada census tracts, and color-coded the number of traffic accidents that occurred in each neighborhood on the map. From the map, we can see that West Humber-Clairville is the most crash-prone neighborhood, with a total of 415 serious crashes from 2007 to 2021. Followed by the Yonge-Bay Corridor and South Riverdale in downtown, with a total of 200-300 crashes. Wexford/Maryvale and Milliken have also experienced a relatively high number of traffic accidents (around 250).
+<br>
+
+
+### KSI by rode type for each year
+```{r p2, echo=FALSE}
+plot2
+```
+This plot shows that Major and Minor Arterial are the most frequent road types for traffic accidents, and the number of accidents on these two roads gradually decreases as the year progresses. The number of traffic accidents on other roads remained more or less the same.
+<br>
+
+### Alcohol related KSI
+```{r p3, echo=FALSE}
+plot3
+```
+This graph shows the trend of crashes related to drunk driving over the years. We can see a rapid decrease in the frequency of drunk driving crashes from 2006 onward, especially a significant decrease in cases that resulted in MAJOR injury and no INJURY.
+<br>
+
+## Noninteractive Visulations {.tabset}
+
+### weather & road conditions
+```{r p4, echo=FALSE}
+plot4
+```
+To analyze the likelihood of traffic accidents based on different road conditions, it is not appropriate to simply tally the number of accidents per road condition. This is because road conditions like wet, icy, or with loose sand or gravel are infrequent occurrences due to less frequent rain, snow, or dust storms. Hence, to accurately determine the likelihood of serious traffic accidents per day on a specific road condition, I divide the total number of accidents by the number of days in which that particular road condition may arise.
+
+The resulting average number of accidents per day under a specific road condition is obtained. The bar plot below shows that, on average, 1.62 collisions occur on wet roads, 0.93 collisions occur on icy roads, and merely 0.92 collisions occur on dry roads.
+
+Nonetheless, this approach is subject to bias since fewer vehicles are likely to travel during inclement weather conditions, resulting in an underestimation of the average number of traffic accidents occurring on all road conditions other than dry roads.
+<br>
+
+
+### speeding & alcohol
+
+```{r p5, echo=FALSE}
+plot5
+```
+I tallied the occurrences of collisions for each year based on the following categories: collisions where the driver was not under the influence of alcohol (DUI) and not speeding, collisions where the driver was DUI but not speeding, collisions where the driver was not DUI but was speeding, and collisions where the driver was both DUI and speeding. Additionally, I recorded the distribution of injuries for each of these categories. My analysis shows that in the case of DUI, speeding and non-speeding are almost equally likely, while most accidents occur without speeding in the case of no DUI. These findings suggest that DUI is a critical factor leading to speeding and highlight the need for strict enforcement of DUI laws and better education on the dangers of drunk driving.
+
+I also notice that for speeding and alcohol-induced traffic accidents, injuries occur more frequently. So I test this hypothesis using logistic regression and make a summary table.
+```{r, echo=FALSE}
+data <- data.frame(
+  Coefficients = c("(intercept)", "SPEEDTRUE", "ALCOHOLTRUE"),
+  `Estimated Value` = c(0.262, 0.406, 0.465),
+  `Std. Error` = c(0.019, 0.0157, 0.1),
+  `z value` = c(13.722, 7.128, 4.646),
+  `p-value` = c(0.000, 0.000, 0.000)
+)
+
+kable(data, "html", align = "c") %>%
+  kable_styling(full_width = FALSE) %>%
+  column_spec(1, bold = TRUE, border_right = TRUE) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#4e79a7")
+```
+The logistic regression analysis conducted indicates that the predictors, SPEEDING and ALCOHOL, have a significant impact on the likelihood of a traffic collision resulting in injury. The coefficient for SPEEDING is $\hat{\beta}_1 = 0.406$, indicating that the odds of injury are approximately $e^{\hat{\beta}_1} = 1.5$ times higher when speeding is a factor in the collision event. Similarly, the coefficient for ALCOHOL is $\hat{\beta}_2 = 0.465$, which suggests that the odds of injury are approximately $e^{\hat{\beta}_2} = 1.6$ times higher when alcohol is involved. The intercept coefficient, $\hat{\beta}_0$, is 0.262. This represents the log odds of injury when neither SPEEDING nor ALCOHOL are present in the collision event. The p-value for all coefficients is 0, indicating that they are statistically significant predictors of injury.
+<br>

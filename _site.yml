@@ -1,0 +1,45 @@
+name: "my-website"
+output_dir: "."
+navbar:
+  title: "JSC370 Final Project"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Visualizations"
+      href: visualization.html
+    - text: "Data Source"
+      menu:
+        - text: "Toronto Police Service Open Data Portal"
+          href: https://data.torontopolice.on.ca/pages/open-data
+        - text: "City of Toronto's Open Data Portal"
+          href: https://open.toronto.ca/
+    - text: "Report"
+      icon: fa-file-pdf-o
+      href: report.pdf
+    - text: "Demonstration"
+      icon: fa-video
+      href: https://open.toronto.ca/
+  right:
+    - icon: fa-github fa-lg
+      href: https://github.com/Runshi-Yang
+    - icon: fa-linkedin fa-lg
+      href: https://www.linkedin.com/in/runshi-yang/
+    - text: "JSC370 Home"
+      href: https://jsc370.github.io/jsc370-2023/
+      
+output:
+  html_document:
+    theme: lumen
+    include:
+      after_body: footer.html
+    css: styles.css
+    
+# output:
+#   prettydoc::html_pretty:
+#     theme: cayman
+#     highlight: github
+#     toc: true
+#   html_document:
+#     include:
+#       after_body: footer.html
+#     css: styles.css

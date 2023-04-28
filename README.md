@@ -12,7 +12,7 @@ The purpose of this report is to investigate the factors that contribute to seri
 
 ## Website
 
-You can click it out at: https://Runshi-Yang.github.io/JSC370-Final-Project
+You can click it out at: https://Runshi-Yang.github.io/JSC370-Project
 
 ## About the Author
 

@@ -1,0 +1,487 @@
+---
+title: "Examining the factors affecting the occurrence of traffic accidents"
+subtitle: "JSC370 Final Project"
+author: "RunshiYang"
+output:
+   pdf_document:
+      latex_engine: pdflatex
+      fig_caption: true
+      number_sections: true
+header-includes:
+  - \usepackage{caption}
+---
+
+\captionsetup[table]{labelformat=empty}
+```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
+library(httr)
+library(jsonlite)
+library(dplyr)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+library(leaflet)
+library(viridis)
+library(tidyverse)
+library(ggplot2)
+library(gridExtra)
+library(broom)
+library(sf)
+library(boot)
+library(rpart)
+library(rpart.plot)
+```
+\tableofcontents
+\newpage
+# Introduction
+
+## Background
+Traffic accidents are one of the leading causes of injury and death worldwide. Despite significant advances in transportation safety technology, road traffic accidents remain a serious public health concern. In Canada, traffic accidents result in thousands of injuries and fatalities each year, with many of these accidents occurring in the city of Toronto.
+
+[Toronto Police Service Open Data Portal](https://data.torontopolice.on.ca/) offers a Traffic Collisions - Killed or Seriously Injured (KSI) Dataset, containing detailed information on all traffic collision events in Toronto from 2006 to 2021, where at least one person was either killed or seriously injured. This dataset provides comprehensive information that can help stakeholders gain a better understanding of the causes and consequences of traffic accidents in the city.
+
+## Research Question
+The purpose of this report is to investigate the factors that contribute to serious traffic accidents in Toronto. The analysis will focus on identifying the contributing factors to incidents resulting in death or serious injury, including geographic location, environmental factors and demographic characteristics of drivers. The findings of this report will help policymakers, transportation planners, and other stakeholders to develop effective policies and interventions aimed at reducing the incidence of serious traffic accidents.
+
+\newpage
+# Methods
+
+## Data Collection
+
+The main data used in this report were obtained from the Toronto Police Service Open Data Portal, which is a reliable source of information on traffic accidents in Toronto. The data are available for download as a CSV file from [this website (click to open)](https://data.torontopolice.on.ca/datasets/TorontoPS::ksi/about), and an API is also provided for data retrieval. I chose to use the API since it allows for greater flexibility in downloading data. For example, I am able to specify the range of years and the type of collisions I want to include in the dataset and I can retrieve data in real-time, ensuring that the dataset is up-to-date. However, due to the transfer limitations of the API, only 1000 rows of data could be downloaded at a time. To obtain the complete dataset, the API had to be called 17 times, with the offset value being updated each time to ensure that all rows were retrieved. The acquired dataset contains 16,488 observations and 57 columns, with each line detailing the time, location, and road conditions of the corresponding traffic accident. Each observation in the dataset has a unique index that can be used to identify and track specific accidents.
+
+```{r load_data, include=FALSE}
+# Uncomment the following code to load in data using API
+# # Initialize an empty data frame to store the results
+# KSI <- data.frame()
+# 
+# # Loop through the 10 API calls and combine the results
+# for (i in 1:17) {
+#   # Construct the API URL with the appropriate resultOffset
+#   url <- paste0("https://services.arcgis.com/S9th0jAJ7bqgIRjw/arcgis/rest/services/KSI/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&relationParam=&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&defaultSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=", i*1000, "&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=")
+# 
+#   # Make the API call
+#   response <- GET(url = url, config = config(connecttimeout = 60))
+# 
+#   # Convert the response to a data frame
+#   KSI_i <- fromJSON(content(response, "text"), flatten = TRUE)
+#   df_i <- as.data.frame(KSI_i$features)
+# 
+#   # Append the data frame to the overall KSI data frame
+#   KSI <- rbind(KSI, df_i)
+# }
+# write.csv(KSI, file = "KSI.csv", row.names = FALSE)
+
+# Comment the following code to load in data using API
+KSI <- read.csv("https://raw.githubusercontent.com/Runshi-Yang/JSC370/main/assignments/final/KSI.csv")
+```
+
+```{r table-0, echo=FALSE}
+# The following table can not be shown in the pdf file
+# KSI_subset <- KSI %>%
+#   head(7)
+# kable(KSI_subset, format = "html", align = "c") %>%
+#   kable_styling("striped", full_width = FALSE) %>%
+#   row_spec(0, bold = TRUE) %>%
+#   add_header_above(c(" " = 1, "Table 1: The First 7 rows of the raw KSI Data" = 56), escape = FALSE, align = "left") %>%
+#   scroll_box(width = "100%")
+```
+
+## Data Cleaning and Data Wrangling
+
+In this study, data cleaning and wrangling are conducted to ensure the accuracy and consistency of the data. First, 11 columns of the KSI dataset are selected based on their potential influence on traffic accidents, including factors such as location, road conditions, and driver behavior. To facilitate analysis and interpretation, columns are renamed with more descriptive names. 
+
+One issue identified during the data cleaning process was the date column, which was recorded in [Unix time](https://en.wikipedia.org/wiki/Unix_time). To make the data more accessible and understandable, the date column is converted to a year/month/day hour:minute format with the help of the `lubridate` package.
+
+Another issue identified during the data cleaning process was the use of `NA` values in the SPEEDING and ALCOHOL columns to indicate that the driver was not speeding or driving under the influence. To ensure consistency and avoid potential confusion, these NA values are replaced with boolean values (`TRUE` and `FALSE`) to indicate whether or not these factors were involved in the collision. 
+
+Finally, due to the relatively small number of incomplete observations, it was decided to remove any observation with missing data. The resulting cleaned dataset contains 15,159 observations, all of which have complete data. This ensures that the analysis conducted on this dataset is reliable and accurate. Table 1 shows the first 10 rows of the cleaned data.
+
+```{r choose_column, include=FALSE}
+# Select the columns that I am interested in
+KSI <- KSI |>
+  select(attributes.INDEX_,
+         attributes.YEAR,
+         attributes.DATE,
+         attributes.ROAD_CLASS,
+         attributes.LATITUDE,
+         attributes.LONGITUDE,
+         attributes.VISIBILITY,
+         attributes.RDSFCOND,
+         attributes.INJURY,
+         attributes.SPEEDING,
+         attributes.ALCOHOL
+         ) |>
+  rename(ID = attributes.INDEX_,
+         YEAR = attributes.YEAR,
+         DATE = attributes.DATE,
+         ROAD_CLASS = attributes.ROAD_CLASS,
+         LATITUDE = attributes.LATITUDE,
+         LONGITUDE = attributes.LONGITUDE,
+         WEATHER = attributes.VISIBILITY,
+         ROAD_CONDITION = attributes.RDSFCOND,
+         INJURY = attributes.INJURY,
+         SPEEDING = attributes.SPEEDING,
+         ALCOHOL = attributes.ALCOHOL)
+```
+
+```{r clean,include=FALSE}
+# Converting DATE column:
+KSI$DATE <- as_datetime(KSI$DATE / 1000, origin = "1970-01-01")
+KSI$DATE <- format(KSI$DATE, "%Y-%m-%d %H:%M")
+
+# Replace "Yes" with TRUE and NA with FALSE in the SPEEDING and ALCOHOL columns
+KSI$SPEEDING <- ifelse(is.na(KSI$SPEEDING), FALSE, TRUE)
+KSI$ALCOHOL <- ifelse(is.na(KSI$ALCOHOL), FALSE, TRUE)
+
+# Check the number of observations with NA
+sum(rowSums(is.na(KSI)) > 0)
+
+# Subset the data frame to only include rows without missing values
+KSI <- KSI[complete.cases(KSI), ]
+```
+
+```{r table-1, echo=FALSE}
+# Subset the data frame to include the first 10 rows and reorder the columns
+KSI_subset <- KSI |>
+  select(ID, YEAR, DATE, ROAD_CLASS, LATITUDE, LONGITUDE, WEATHER, ROAD_CONDITION, INJURY, SPEEDING, ALCOHOL) %>%
+  head(10)
+kable(KSI_subset, format = "latex", booktabs = TRUE) %>%
+  add_header_above(c(" " = 1, "Table 1: cleaned data" = 9)) %>%
+  kable_styling(latex_options = c("striped", "scale_down"), 
+                font_size = 12, 
+                full_width = FALSE) %>%
+  column_spec(0, bold = TRUE, color = "black", background = "#3399CC") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "#3399CC")
+
+# # Create a table with the first 10 rows of the cleaned data frame with scrollbar
+# kable(KSI_subset, format = "html", align = "c") %>%
+#   kable_styling("striped", full_width = FALSE) %>%
+#   row_spec(0, bold = TRUE) %>%
+#   add_header_above(c(" " = 1, "Table 1: The First 6 rows of the cleaned KSI Data" = 10), escape = FALSE, align = "left") %>%
+#   scroll_box(width = "100%")
+```
+
+
+```{r table-2, echo=FALSE}
+# Compute summary statistics for numeric columns
+KSI_summary <- summary(KSI[, sapply(KSI, is.numeric)])
+
+# # Format the summary table
+# kable(KSI_summary,
+#       caption = "Table 3: Summary of Numeric Columns in KSI Data Frame",
+#       align = "c") %>%
+#   kable_styling("striped", full_width = FALSE) %>%
+#   row_spec(0, bold = TRUE) %>%
+#   add_header_above(c(" " = 1, "Summary Statistics" = 4), escape = FALSE, align = "left")
+kable(KSI_summary, format = "latex", booktabs = TRUE) %>%
+  add_header_above(c(" " = 1, "Table 2: Summary Statistics" = 4)) %>%
+  kable_styling(latex_options = c("striped", "scale_down"), 
+                font_size = 8, 
+                full_width = TRUE) %>%
+  column_spec(1, bold = TRUE) %>%
+  row_spec(0, bold = TRUE)
+```
+
+Then I move on to analyzing the data to identify any anomalies or potential errors. One of the first things I did was to create a summary of the numerical variables in the dataset (see Table 2). I do not find anything unusual, which gives me confidence that the data is clean and accurate.
+
+Moving on, I create a bar plot to show the distribution of collisions over the years. From the plot, I observe that the number of KSIs per year decreases as the year increases, except for 2006 where there was a lower number of KSIs compared to the other years. And the number of traffic accidents decreases rapidly from 2020 to 2022. So I plotted the number of traffic accidents from 2006 to 2007 and 2019 to 2022 in the chart below. It turns out that the data for 2006 and 2022 are not complete, the dataset only records data after September 2006 and before October 2022. And I suspect that the data for 2020 and 2021 are not representative since they are affected by Covid-19. Since time of the year is potentially associated with traffic accidents, so I decided to use only the data between 2007 and 2019 for the analysis.
+
+```{r fig1, echo=FALSE, fig.width = 10, fig.height = 6}
+KSI_filter <- KSI %>% 
+  filter(YEAR != 2006, YEAR != 2020, YEAR != 2021, YEAR != 2022)
+
+histogram_2006 <- ggplot(KSI, aes(x = YEAR, fill = factor(YEAR))) +
+  geom_histogram(color = "black", alpha = 0.8, binwidth = 1) +
+  scale_fill_viridis_d() +
+  labs(title = "Distribution of Collisions by Year", x = "Year", y = "Frequency") +
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        axis.line = element_line(color = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        plot.margin = unit(c(1,1,1,1), "cm"))
+
+histogram_no_2006 <- ggplot(KSI_filter, aes(x = YEAR, fill = factor(YEAR))) +
+  geom_histogram(color = "black", alpha = 0.8, binwidth = 1) +
+  scale_fill_viridis_d() +
+  labs(title = "Distribution of Collisions by Year", x = "Year", y = "Frequency") +
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12),
+        axis.line = element_line(color = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        plot.margin = unit(c(1,1,1,1), "cm"))
+grid.arrange(histogram_2006, histogram_no_2006, ncol = 2)
+```
+
+```{r fig2, echo=FALSE, message=FALSE, warning = FALSE, fig.width = 10, fig.height = 6}
+# First plot
+KSI_2006_2007 <- KSI %>% 
+  filter(YEAR %in% c(2006, 2007)) %>%
+  mutate(MONTH = lubridate::month(DATE))
+collisions_by_month1 <- KSI_2006_2007 %>%
+  group_by(YEAR, MONTH) %>%
+  summarise(COLLISIONS = n())
+plot1 <- ggplot(collisions_by_month1, aes(x = as.Date(paste(YEAR, MONTH, "01", sep = "-")), y = COLLISIONS)) +
+  geom_line() +
+  scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+  labs(x = "Month", y = "Number of Collisions", title = "Monthly Collisions in Toronto, 2006-2007") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Second plot
+KSI_2019_2022 <- KSI %>% 
+  filter(YEAR %in% c(2019, 2020, 2021, 2022)) %>%
+  mutate(MONTH = lubridate::month(DATE))
+collisions_by_month2 <- KSI_2019_2022 %>%
+  group_by(YEAR, MONTH) %>%
+  summarise(COLLISIONS = n())
+plot2 <- ggplot(collisions_by_month2, aes(x = as.Date(paste(YEAR, MONTH, "01", sep = "-")), y = COLLISIONS)) +
+  geom_line() +
+  scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+  labs(x = "Month", y = "Number of Collisions", title = "Monthly Collisions in Toronto, 2019-2022") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Arrange plots vertically in the same grid
+grid.arrange(plot1, plot2, ncol = 1)
+```
+```{r, echo=FALSE}
+KSI <- KSI %>% 
+  filter(YEAR != 2006, YEAR != 2020, YEAR != 2021, YEAR != 2022)
+
+write.csv(KSI, file = "KSI.csv", row.names = FALSE)
+```
+Overall, the analysis gives me confidence that the data is now clean and accurate. By identifying and addressing any potential anomalies or biases, I am able to ensure the validity and reliability of the analysis. The dataset contains a total of 11,312 observations, providing us with sufficient data to draw inferences about the factors that contribute to the incidence of severe traffic accidents in Toronto.
+
+\newpage
+# Results
+
+I investigate the factors affecting traffic accidents from three perspectives: geographic location, natural environment, and drivers. We examine the relationship between the frequency of accidents and the latitude, longitude, and road type of the accident-prone areas. Furthermore, we explore the correlation between accidents and natural factors such as season and road conditions. Lastly, we delve into the role of speeding and alcohol as critical factors in causing traffic accidents.
+
+## Geographic Location (latitude, longitude)
+
+To investigate the effect of geographic location on traffic accidents, I grouped all traffic accidents that occurred between 2007 and 2021 by neighborhood using information on the latitude and longitude of traffic accidents and the Toronto neighborhood delineated by Statistics Canada census tracts, and color-coded the number of traffic accidents that occurred in each neighborhood on the map. From the interactive map in [my website (click to open)](https://Runshi-Yang.github.io/JSC370-Final-Project), we can see that West Humber-Clairville is the most crash-prone neighborhood, with a total of 415 serious crashes from 2007 to 2021. Followed by the Yonge-Bay Corridor and South Riverdale in downtown, with a total of 200-300 crashes. Wexford/Maryvale and Milliken have also experienced a relatively high number of traffic accidents (around 250).
+
+```{r plot1, class.source="code-r-small", echo=FALSE, results = 'hide'}
+# Load neighborhood shapefile
+neighborhoods <- st_read("data/Neighbourhoods.geojson")
+
+# Filter KSI data for the time period and location covered by the neighborhood shapefile
+KSI_filtered <- KSI %>%
+  st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = 4326)
+
+# Aggregate KSI data by neighborhood
+collisions_by_neighborhood <- st_join(KSI_filtered, neighborhoods, join = st_intersects) %>%
+  group_by(AREA_NAME) %>%
+  summarize(count = n()) %>%
+  mutate(AREA_NAME = as.character(AREA_NAME))  # Add AREA_NAME column
+
+# Merge neighborhood and collision data
+neighborhoods_collisions <- st_join(neighborhoods, collisions_by_neighborhood)
+
+# Create a leaflet map
+pal <- colorNumeric(palette = "Reds", domain = neighborhoods_collisions$count)
+leaflet(neighborhoods_collisions) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addPolygons(fillColor = ~pal(count),
+              fillOpacity = 0.8,
+              color = "white",
+              weight = 1,
+              popup = ~paste(AREA_NAME.x, "<br>", "Number of Collisions: ", count)) %>%
+  addLegend(position = "bottomright", 
+            title = "Number of Collisions",
+            pal = pal,
+            values = neighborhoods_collisions$count)
+```
+
+\newpage
+## Natural Environment (weather & road conditions)
+To analyze the likelihood of traffic accidents based on different road conditions, it is not appropriate to simply tally the number of accidents per road condition. This is because road conditions like wet, icy, or with loose sand or gravel are infrequent occurrences due to less frequent rain, snow, or dust storms. Hence, to accurately determine the likelihood of serious traffic accidents per day on a specific road condition, I divide the total number of accidents by the number of days in which that particular road condition may arise.
+
+The resulting average number of accidents per day under a specific road condition is obtained. The bar plot below shows that, on average, 1.62 collisions occur on wet roads, 0.93 collisions occur on icy roads, and merely 0.92 collisions occur on dry roads.
+
+Nonetheless, this approach is subject to bias since fewer vehicles are likely to travel during inclement weather conditions, resulting in an underestimation of the average number of traffic accidents occurring on all road conditions other than dry roads.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+KSI$ROAD_CONDITION <- ifelse(KSI$ROAD_CONDITION %in% c("Ice", "Loose Snow", "Packed Snow", "Slush"), "Ice",
+                              ifelse(KSI$ROAD_CONDITION == "Spilled liquid", "Wet",
+                                     ifelse(KSI$ROAD_CONDITION == "Strong wind", "Other", KSI$ROAD_CONDITION)))
+
+# Calculate the number of collisions for each weather condition
+n1 <- table(KSI$WEATHER)["Clear"]
+n2 <- sum(table(KSI$WEATHER)[c("Freezing Rain", "Snow", "Drifting Snow")])
+n3 <- table(KSI$WEATHER)["Fog, Mist, Smoke, Dust"]
+n4 <- table(KSI$WEATHER)["Rain"]
+n5 <- sum(table(KSI$WEATHER)[c("Strong wind", "Other")])
+
+# Calculate the total number of collisions on each road condition
+avg_Dry <- sum(KSI$ROAD_CONDITION == "Dry") / n1
+avg_Ice <- sum(KSI$ROAD_CONDITION %in% c("Ice", "Freezing Rain", "Snow", "Drifting Snow")) / n2
+avg_Loose_Sand_Gravel <- sum(KSI$ROAD_CONDITION == "Loose Sand or Gravel") / n3
+avg_Wet <- sum(KSI$ROAD_CONDITION == "Wet") / n4
+avg_Other <- sum(KSI$ROAD_CONDITION %in% c("Other", "Strong wind")) / n5
+
+avgs <- c(avg_Dry, avg_Ice, avg_Loose_Sand_Gravel, avg_Wet, avg_Other)
+bar_colors <- c("#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3")
+
+# Create the bar plot with specified colors and add title
+barplot(avgs, names.arg = c("Dry", "Ice", "Loose Sand or Gravel", "Wet", "Other"), 
+        xlab = "Road Condition", ylab = "Average Number of Collisions Per Day", 
+        col = bar_colors, main = "Average Number of Collisions by Road Condition")
+
+# Add horizontal grid lines to the plot
+abline(h = seq(0, max(avgs), by = 0.5), lty = "dotted", col = "gray")
+
+# Add text labels to the bars indicating the average number of collisions
+text(x = 1:length(avgs), y = avgs, labels = round(avgs, 2), pos = 1, col = "black", cex = 0.8)
+```
+
+\newpage
+## Drivers (speeding & alcohol)
+I tallied the occurrences of collisions for each year based on the following categories: collisions where the driver was not under the influence of alcohol (DUI) and not speeding, collisions where the driver was DUI but not speeding, collisions where the driver was not DUI but was speeding, and collisions where the driver was both DUI and speeding. Additionally, I recorded the distribution of injuries for each of these categories. My analysis shows that in the case of DUI, speeding and non-speeding are almost equally likely, while most accidents occur without speeding in the case of no DUI. These findings suggest that DUI is a critical factor leading to speeding and highlight the need for strict enforcement of DUI laws and better education on the dangers of drunk driving.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# Define the order of injury levels
+injury_order <- c("Fatal", "Major", "Minimal", "Minor", "None")
+
+# Group the data by speeding, alcohol, year, and injury level, and count the number of collisions in each group
+KSI_summary <- KSI %>%
+  mutate(SPEEDING = ifelse(SPEEDING, "speeding", "no speeding"),
+         ALCOHOL = ifelse(ALCOHOL, "alcohol", "no alcohol")) %>%
+  group_by(SPEEDING, ALCOHOL, INJURY) %>%
+  summarize(num_collisions = n())
+
+# Create a stacked bar chart showing the number of collisions for each injury level, separated by speeding and alcohol status
+ggplot(KSI_summary, aes(x = INJURY, y = num_collisions, fill = INJURY)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "Injury Level", y = "Number of Collisions", fill = NULL) +
+  scale_fill_discrete(limits = injury_order) +
+  theme(panel.spacing.x = unit(0.5, "lines")) +
+  facet_grid(SPEEDING ~ ALCOHOL)
+
+```
+
+I also notice that for speeding and alcohol-induced traffic accidents, injuries occur more frequently. So I test this hypothesis using logistic regression, decision tree and random forest:
+
+### Logistic Regression
+From Table 1, we can see that the logistic regression analysis conducted indicates that the predictors, SPEEDING and ALCOHOL, have a significant impact on the likelihood of a traffic collision resulting in injury. The coefficient for SPEEDING is $\hat{\beta}_1 = 0.406$, indicating that the odds of injury are approximately $e^{\hat{\beta}_1} = 1.5$ times higher when speeding is a factor in the collision event. Similarly, the coefficient for ALCOHOL is $\hat{\beta}_2 = 0.465$, which suggests that the odds of injury are approximately $e^{\hat{\beta}_2} = 1.6$ times higher when alcohol is involved. The intercept coefficient, $\hat{\beta}_0$, is 0.262. This represents the log odds of injury when neither SPEEDING nor ALCOHOL are present in the collision event. The p-value for all coefficients is 0, indicating that they are statistically significant predictors of injury.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+KSI$Injury_binary <- ifelse(KSI$INJURY == "None", 0, 1)
+model <- glm(Injury_binary ~ SPEEDING + ALCOHOL, data = KSI, family = "binomial")
+
+# create a tidy summary table using the tidy() function from broom
+tidy_summary <- tidy(model)
+
+# extract the coefficients, estimate, std. error, z value, and p value columns
+tidy_summary <- tidy_summary[, c("term", "estimate", "std.error", "statistic", "p.value")]
+
+# rename the columns
+colnames(tidy_summary) <- c("Coefficients", "Estimated value", "Std. Error", "z value", "Pr(>|z|)")
+
+# format the values using kableExtra
+tidy_summary$`Estimated value` <- sprintf("%.3f", tidy_summary$`Estimated value`)
+tidy_summary$`Std. Error` <- sprintf("%.3f", tidy_summary$`Std. Error`)
+tidy_summary$`z value` <- sprintf("%.3f", tidy_summary$`z value`)
+tidy_summary$`Pr(>|z|)` <- sprintf("%.3f", tidy_summary$`Pr(>|z|)`)
+
+
+
+kable(tidy_summary, 
+      caption = "Table 3: Logistic Regression Summary Table",
+      align = "c",
+      col.names = c("Coefficients", "Estimated value", "Std. Error", "z value", "Pr(>|z|)"),
+      format.args = list(decimal.mark = ".", 
+                         big.mark = ",",
+                         scientific = FALSE),
+      label = NULL)
+```
+
+The logistic regression equation for this model is as follows: 
+$$\text{logit}(\hat{\pi}) = \log \frac{\hat{\pi}}{1-\hat{\pi}} = 0.262 + 0.406(SPEEDING) + 0.465(ALCOHOL),$$
+where $\pi$ represents the probability of injury and SPEEDING and ALCOHOL are indicator variables for whether speeding or alcohol were present in the collision event.
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# # Split the data into training and testing sets
+# set.seed(123)
+# train_indices <- sample(nrow(KSI), 0.8 * nrow(KSI))
+# train_data <- KSI[train_indices, ]
+# test_data <- KSI[-train_indices, ]
+# 
+# # Fit the model on the training set
+# model <- glm(Injury_binary ~ SPEEDING + ALCOHOL, data = train_data, family = "binomial")
+# 
+# # Make predictions on the testing set
+# test_predictions <- predict(model, newdata = test_data, type = "response")
+# 
+# # Evaluate the performance of the model using the AUC-ROC metric
+# library(pROC)
+# auc(roc(test_data$Injury_binary, test_predictions))
+# 
+# # Calculate the predicted classes based on a probability threshold of 0.5
+# test_predictions_class <- ifelse(test_predictions > 0.5, 1, 0)
+```
+
+### Decision Tree
+
+The binary decision tree model predict injury in traffic accidents based on a set of predictors (YEAR, ROAD_CLASS, WEATHER, ROAD_CONDITION, SPEEDING, and ALCOHOL).
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# Convert injury to a factor variable
+KSI$Injury_binary <- factor(KSI$Injury_binary, levels = c(0,1), labels = c("No Injury", "Injury"))
+
+# Build the binary tree model
+treefit <- rpart(Injury_binary ~ YEAR + ROAD_CLASS + WEATHER + ROAD_CONDITION + SPEEDING + ALCOHOL, data = KSI, method = "class", control = rpart.control(cp = 0.00034))
+
+# Plot the binary tree
+rpart.plot(treefit)
+```
+Based on the output from the decision tree model, the most important factors leading to injury in traffic accidents are the variables "SPEEDING" and "ALCOHOL". And the These variables are used as the first two splits in the decision tree, indicating that they have a strong predictive power in determining whether an accident resulted in an injury.
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# Get variable importance values
+var_importance <- data.frame(variable = names(treefit$variable.importance),
+                             importance = treefit$variable.importance)
+
+# Sort by importance (in descending order)
+var_importance <- var_importance[order(-var_importance$importance),]
+
+# create a table with kable
+kable(var_importance[, c(1,2)], 
+      caption = "Table 4: Variable Importance for Decision Tree",
+      align = "c",
+      col.names = c("Variable", "Importance"),
+      format.args = list(decimal.mark = ".", 
+                         big.mark = ",",
+                         scientific = FALSE),
+      row.names = FALSE)
+```
+The first split on "SPEEDING" suggests that accidents with no speeding are less likely to result in injury compared to accidents with speeding. The second split on "ALCOHOL" suggests that accidents with no alcohol involved are less likely to result in injury compared to accidents with alcohol involved. And the importance of these two variables is relatively high compared with the others.
+
+While the other predictor variables (YEAR, ROAD_CLASS, WEATHER, and ROAD_CONDITION) are also included in the decision tree model, they are not as influential as "SPEEDING" and "ALCOHOL" in predicting injury. Therefore, addressing the issues of speeding and alcohol consumption in drivers may have the most significant impact in reducing the number of injuries resulting from traffic accidents.
+
+### Bagging, Random Forest
+
+However, when I tried to use bagging to build multiple decision trees on randomly sampled subsets of the data to reduce overfitting and improve the generalization performance of the model, it turns out that SPEEDING and ALCOHOL has relative low importance, which contradict with the previous results. It is possible that the variables ALCOHOL and SPEEDING are strongly correlated with other variables in the dataset, which means that they may not be as important in predicting injury when other variables are also taken into account. When using a single decision tree, the algorithm may give more weight to these variables if they happen to be the best predictor of the outcome in the tree's splits. However, when using bagging, the algorithm is able to average out the importance of each variable across multiple trees, which may result in a smaller relative importance for these variables.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width = 10, fig.height = 6}
+set.seed(370) # for reproducibility
+
+library(randomForest)
+
+n_features <- dim(KSI)[2] - 1
+KSI_bagging <- randomForest(as.factor(INJURY) ~ SPEEDING + ALCOHOL +  YEAR + ROAD_CLASS + WEATHER + ROAD_CONDITION, 
+                            data = KSI, 
+                            mtry = n_features,
+                            na.action = na.omit)
+
+varImpPlot(KSI_bagging, main = "Variable importance plot (Bagging)")
+```
+\newpage
+
+# Conclusions and Summary 
+
+From my analysis, I have found that there are multiple factors contributing to serious traffic accidents in Toronto. The geographic location of accident-prone areas are West Humber-Clairville, Yonge-Bay Corridor, Wexford/Maryvale and Milliken. The natural environment, specifically the wet roads after rain contributes the most to the occurrence of accidents, followed by icy roads after snow. Finally, DUI remains a critical factor leading to speeding and accidents involving both speeding and alcohol are more likely to result in injuries.
+
+The study suggests that safety measures such as increased police presence and traffic enforcement could be implemented in the accident-prone areas and during bad weather, and efforts to raise awareness about the dangers of driving under the influence should be made to reduce the occurrence of such accidents.

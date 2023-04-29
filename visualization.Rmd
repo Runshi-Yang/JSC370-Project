@@ -222,7 +222,7 @@ plot4
 ```
 To analyze the likelihood of traffic accidents based on different road conditions, it is not appropriate to simply tally the number of accidents per road condition. This is because road conditions like wet, icy, or with loose sand or gravel are infrequent occurrences due to less frequent rain, snow, or dust storms. Hence, to accurately determine the likelihood of serious traffic accidents per day on a specific road condition, I divide the total number of accidents by the number of days in which that particular road condition may arise.
 
-The resulting average number of accidents per day under a specific road condition is obtained. The bar plot below shows that, on average, 1.62 collisions occur on wet roads, 0.93 collisions occur on icy roads, and merely 0.92 collisions occur on dry roads.
+The resulting average number of accidents per day under a specific road condition is obtained. The bar plot below shows that, on average, 1.63 collisions occur on wet roads, 0.97 collisions occur on icy roads, and merely 0.93 collisions occur on dry roads.
 
 Nonetheless, this approach is subject to bias since fewer vehicles are likely to travel during inclement weather conditions, resulting in an underestimation of the average number of traffic accidents occurring on all road conditions other than dry roads.
 <br>

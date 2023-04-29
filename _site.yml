@@ -18,7 +18,7 @@ navbar:
       href: report.pdf
     - text: "Demonstration"
       icon: fa-video
-      href: https://play.library.utoronto.ca/watch/9b3daf0885d0525cb943a5397c3e284e
+      href: https://play.library.utoronto.ca/watch/70a22274b7a189bf1a4780638951e791
   right:
     - icon: fa-github fa-lg
       href: https://github.com/Runshi-Yang
